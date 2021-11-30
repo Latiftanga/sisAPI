@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 
 services:
   api:
@@ -10,18 +10,26 @@ services:
       - ./api:/api
     command: >
               sh -c "
+              python manage.py wait_for_db &&
+              python manage.py migrate &&
               python manage.py runserver 0.0.0.0:8000"
-  #   environment:
-  #     - DB_HOST=db
-  #     - DB_NAME=api
-  #     - DB_USER=postgres
-  #     - DB_PASS=supersecretpassword
-  #   depends_on:
-  #     - db
+    environment:
+      - DB_HOST=db
+      - DB_NAME=apidb
+      - DB_USER=postgres
+      - DB_PASS=supersecretpassword
+    depends_on:
+      - db
 
-  # db:
-  #   image: postgres:12-alpine
-  #   environment:
-  #     - POSTGRES_DB=api
-  #     - POSTGRES_USER=postgres
-  #     - POSTGRES_PASSWORD=supersecretpassword
+  db:
+    image: postgres:14-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: supersecretpassword
+      POSTGRES_DB: apidb
+    volumes:
+      - ./data:/var/lib/postgresql/data\
+
